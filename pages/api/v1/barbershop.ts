@@ -115,9 +115,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(400).json({ message: "Silahkan isi bodynya", body: barbershop });
     }
     const id = nanoid(16);
-    await firestore.collection("barbershops").doc(id).set(req.body);
+    const barbershopId = `barbershop_${id}`;
+    await firestore.collection("barbershops").doc(barbershopId).set(req.body);
 
-    return res.status(200).json({ message: "OK", id: id, data: req.body });
+    return res.status(200).json({ message: "OK", barbershopId: barbershopId, data: req.body });
   }
   return res.status(200).json({ message: "OK", method: method });
 }
