@@ -1,6 +1,7 @@
 import { firestore } from "../../../firebase/firebase";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { nanoid } from "nanoid";
+import { GeoPoint } from "firebase-admin/firestore";
 
 type OpeningHoursItem = {
   closeTime: number;
@@ -18,14 +19,9 @@ type OpeningHours = {
   thu: OpeningHoursItem;
 };
 
-type Geopoint = {
-  _latitude: number;
-  _longitude: number;
-};
-
 type Location = {
   geohash: string;
-  geopoint: Geopoint;
+  geopoint: GeoPoint;
 };
 
 type Barbershop = {
@@ -81,18 +77,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         isOpen: false,
       },
     },
-    address: "string",
+    address: "",
     completedAppointmentCount: 0,
     reviewCount: 0,
-    photoPath: "string",
+    photoPath: "",
     location: {
-      geohash: "string",
-      geopoint: {
-        _latitude: 0,
-        _longitude: 0,
-      },
+      geohash: "",
+      geopoint: new GeoPoint(1, 1),
     },
-    name: "string",
+    name: "",
     rating: 0,
     closedManually: false,
   };
@@ -116,9 +109,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     const id = nanoid(16);
     const barbershopId = `barbershop_${id}`;
-    await firestore.collection("barbershops").doc(barbershopId).set(req.body);
+    const result = req.body;
+    result.location.geopoint = new GeoPoint(req.body.location._latitude, req.body.location._longitude);
+    await firestore.collection("barbershops").doc(barbershopId).set(result);
 
-    return res.status(200).json({ message: "OK", barbershopId: barbershopId, data: req.body });
+    return res.status(200).json({ message: "OK", barbershopId: barbershopId, data: result });
   }
   return res.status(200).json({ message: "OK", method: method });
 }
