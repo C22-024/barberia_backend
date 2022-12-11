@@ -1,5 +1,6 @@
 import { firestore } from "../../../firebase/firebase";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { idText } from "typescript";
 
 type OpeningHoursItem = {
   closeTime: number;
@@ -101,7 +102,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let barbershopRef = firestore.collection("barbershops");
     const snapshot = await barbershopRef.get();
     snapshot.forEach((doc) => {
-      result.push(doc.data());
+      const docData = doc.data();
+      if (docData.query === undefined) {
+        result.push(doc.data());
+      }
     });
     return res.status(200).json({ message: "ok", data: result });
   }
