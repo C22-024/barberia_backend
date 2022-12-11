@@ -1,6 +1,6 @@
 import { firestore } from "../../../firebase/firebase";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { idText } from "typescript";
+import { nanoid } from "nanoid";
 
 type OpeningHoursItem = {
   closeTime: number;
@@ -114,10 +114,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.body === undefined) {
       res.status(400).json({ message: "Silahkan isi bodynya", body: barbershop });
     }
-    const barbershopRef = firestore.collection("barbershops");
-    barbershopRef.add(req.body);
+    const id = nanoid(16);
+    await firestore.collection("barbershops").doc(id).set(req.body);
 
-    return res.status(200).json({ message: "OK", data: req.body });
+    return res.status(200).json({ message: "OK", id: id, data: req.body });
   }
   return res.status(200).json({ message: "OK", method: method });
 }
